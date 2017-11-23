@@ -65,11 +65,11 @@ let minHeapStringGen =
 // NUnit TestCaseSource does not understand array of tuples at runtime
 let intGens start =
     let v = Array.create 6 (box (maxHeapIntGen, "max Heap int"))
-    v.[1] <- box ((maxHeapIntOfSeqGen  |> Gen.suchThat (fun (q, l) -> l.Length >= start)), "max Heap OfSeq")
-    v.[2] <- box ((maxHeapIntInsertGen  |> Gen.suchThat (fun (q, l) -> l.Length >= start)), "max Heap from Insert")
+    v.[1] <- box ((maxHeapIntOfSeqGen  |> Gen.filter (fun (q, l) -> l.Length >= start)), "max Heap OfSeq")
+    v.[2] <- box ((maxHeapIntInsertGen  |> Gen.filter (fun (q, l) -> l.Length >= start)), "max Heap from Insert")
     v.[3] <- box (minHeapIntGen , "min Heap int")
-    v.[4] <- box ((minHeapIntOfSeqGen  |> Gen.suchThat (fun (q, l) -> l.Length >= start)), "min Heap OfSeq")
-    v.[5] <- box ((minHeapIntInsertGen  |> Gen.suchThat (fun (q, l) -> l.Length >= start)), "min Heap from Insert")
+    v.[4] <- box ((minHeapIntOfSeqGen  |> Gen.filter (fun (q, l) -> l.Length >= start)), "min Heap OfSeq")
+    v.[5] <- box ((minHeapIntInsertGen  |> Gen.filter (fun (q, l) -> l.Length >= start)), "min Heap from Insert")
     v
 
 let stringGens =

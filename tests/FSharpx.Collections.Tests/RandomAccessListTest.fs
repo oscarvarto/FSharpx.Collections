@@ -69,8 +69,8 @@ let RandomAccessListStringGen =
 // NUnit TestCaseSource does not understand array of tuples at runtime
 let intGens start =
     let v = Array.create 3 (box (RandomAccessListIntGen, "RandomAccessList"))
-    v.[1] <- box ((RandomAccessListIntOfSeqGen |> Gen.suchThat (fun (q, l) -> l.Length >= start)), "RandomAccessList OfSeq")
-    v.[2] <- box ((RandomAccessListIntConsGen |> Gen.suchThat (fun (q, l) -> l.Length >= start)), "RandomAccessList conjRandomAccessList") 
+    v.[1] <- box ((RandomAccessListIntOfSeqGen |> Gen.filter (fun (q, l) -> l.Length >= start)), "RandomAccessList OfSeq")
+    v.[2] <- box ((RandomAccessListIntConsGen |> Gen.filter (fun (q, l) -> l.Length >= start)), "RandomAccessList conjRandomAccessList") 
     v
 
 let intGensStart1 =

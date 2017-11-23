@@ -65,8 +65,8 @@ let dequeStringGen =
 // NUnit TestCaseSource does not understand array of tuples at runtime
 let intGens start =
     let v = Array.create 3 (box (dequeIntGen, "Deque"))
-    v.[1] <- box ((dequeIntOfSeqGen |> Gen.suchThat (fun (q, l) -> l.Length >= start)), "Deque OfSeq")
-    v.[2] <- box ((dequeIntConjGen |> Gen.suchThat (fun (q, l) -> l.Length >= start)), "Deque Enqueue") 
+    v.[1] <- box ((dequeIntOfSeqGen |> Gen.filter (fun (q, l) -> l.Length >= start)), "Deque OfSeq")
+    v.[2] <- box ((dequeIntConjGen |> Gen.filter (fun (q, l) -> l.Length >= start)), "Deque Enqueue") 
     v
 
 let intGensStart1 =
@@ -207,25 +207,25 @@ let ``toSeq works``() =
 [<TestCaseSource("intGensStart1")>]
 let ``get head from deque``(x : obj) =
     let genAndName = unbox x 
-    fsCheck (snd genAndName) (Prop.forAll (Arb.fromGen (fst genAndName)) (fun (q : Deque<int>, l) -> (head q) = (List.nth l 0) ))
+    fsCheck (snd genAndName) (Prop.forAll (Arb.fromGen (fst genAndName)) (fun (q : Deque<int>, l) -> (head q) = (List.head l) ))
 
 [<Test>]
 [<TestCaseSource("intGensStart1")>]
 let ``get head from deque safely``(x : obj) =
     let genAndName = unbox x 
-    fsCheck (snd genAndName) (Prop.forAll (Arb.fromGen (fst genAndName)) (fun (q : Deque<int>, l) -> (tryHead q).Value = (List.nth l 0) ))
+    fsCheck (snd genAndName) (Prop.forAll (Arb.fromGen (fst genAndName)) (fun (q : Deque<int>, l) -> (tryHead q).Value = (List.head l) ))
 
 [<Test>]
 [<TestCaseSource("intGensStart2")>]
 let ``get tail from deque``(x : obj) =
     let genAndName = unbox x 
-    fsCheck (snd genAndName) (Prop.forAll (Arb.fromGen (fst genAndName)) (fun ((q : Deque<int>), l) -> q.Tail.Head = (List.nth l 1) ))
+    fsCheck (snd genAndName) (Prop.forAll (Arb.fromGen (fst genAndName)) (fun ((q : Deque<int>), l) -> q.Tail.Head = (List.item 1 l) ))
 
 [<Test>]
 [<TestCaseSource("intGensStart2")>]
 let ``get tail from deque safely``(x : obj) =
     let genAndName = unbox x 
-    fsCheck (snd genAndName) (Prop.forAll (Arb.fromGen (fst genAndName)) (fun (q : Deque<int>, l) -> q.TryTail.Value.Head = (List.nth l 1) ))
+    fsCheck (snd genAndName) (Prop.forAll (Arb.fromGen (fst genAndName)) (fun (q : Deque<int>, l) -> q.TryTail.Value.Head = (List.item 1 l) ))
 
 [<Test>]
 [<TestCaseSource("intGensStart2")>]
@@ -586,7 +586,7 @@ let ``last, init, and length work test 9``() =
 
 [<Test>]
 let ``IEnumerable Seq nth``() =
-    lena |> Seq.nth 5 |> should equal "e"
+    lena |> Seq.item 5 |> should equal "e"
 
 [<Test>]
 let ``IEnumerable Seq length``() =
@@ -623,7 +623,7 @@ let ``unconj works``() =
 [<Test>]
 let ``conj pattern discriminator``() =
     let d = (ofCatLists ["f";"e";"d"] ["c";"b";"a"]) 
-    let i1, l1 = unconj d 
+    let i1, _ = unconj d 
 
     let i2, l2 = 
         match i1 with
@@ -635,7 +635,7 @@ let ``conj pattern discriminator``() =
 [<Test>]
 let ``cons pattern discriminator``() =
     let d = (ofCatLists ["f";"e";"d"] ["c";"b";"a"]) 
-    let h1, t1 = uncons d 
+    let _, t1 = uncons d 
 
     let h2, t2 = 
         match t1 with
@@ -650,12 +650,12 @@ let ``cons and conj pattern discriminator``() =
     
     let mid1 = 
         match d with
-        | Cons(h, Conj(i, l)) -> i
+        | Cons(_, Conj(i, _)) -> i
         | _ -> d
 
     let head, last = 
         match mid1 with
-        | Cons(h, Conj(i, l)) -> h, l
+        | Cons(h, Conj(_, l)) -> h, l
         | _ -> "x", "x"
 
     ((head = "e") && (last = "b")) |> should equal true
@@ -738,7 +738,7 @@ let ``tryUncons on empty``() =
 [<Test>]
 let ``tryUncons on q``() =
     let q = ofSeq ["a";"b";"c";"d"]
-    let x, xs = (tryUncons q).Value 
+    let x, _ = (tryUncons q).Value 
     x |> should equal "a"
 
 [<Test>]
@@ -749,7 +749,7 @@ let ``tryUnconj on empty``() =
 [<Test>]
 let ``tryUnconj on q``() =
     let q = ofSeq ["a";"b";"c";"d"]
-    let xs, x = (tryUnconj q).Value 
+    let _, x = (tryUnconj q).Value 
     x |> should equal "d"
 
 [<Test>]
